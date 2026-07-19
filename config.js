@@ -16,8 +16,8 @@ window.APP_CONFIG = {
 
     // --- Geofencing & Location Safeguards ---
     officeLocation: {
-        latitude: -7.242368,     // Example coordinates (Surabaya)
-        longitude: 112.637895,
+        latitude: -7.2423393,     // Example coordinates (Surabaya)
+        longitude: 112.6379209,
         radiusMeters: 5.0      // Geofence strict activation barrier threshold
     },
 
