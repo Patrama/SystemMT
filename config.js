@@ -18,7 +18,7 @@ window.APP_CONFIG = {
     officeLocation: {
         latitude: -7.2423393,     // Example coordinates (Surabaya)
         longitude: 112.6379209,
-        radiusMeters: 5.0      // Geofence strict activation barrier threshold
+        radiusMeters: 10.0      // Geofence strict activation barrier threshold
     },
 
     // --- Hardcoded Network Anchor ---
