@@ -1,0 +1,260 @@
+/* ==========================================================================
+   🎨 ENTERPRISE CORE THEME LAYOUT (css/style.css)
+   ========================================================================== */
+
+:root {
+    /* 🌌 Dark Theme Palettes (Default) */
+    --bg-primary: #0f0f1a;
+    --bg-surface: #1a1a2e;
+    --bg-card: #252542;
+    --border-color: #38385c;
+
+    --text-primary: #f1f1f7;
+    --text-secondary: #9fa4dd;
+
+    --accent-purple: #8b5cf6;
+    --accent-purple-hover: #a78bfa;
+    --success: #10b981;
+    --warning: #f59e0b;
+
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.3);
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] {
+    /* ☀️ Light Theme Palettes */
+    --bg-primary: #f3f4f6;
+    --bg-surface: #ffffff;
+    --bg-card: #f9fafb;
+    --border-color: #e5e7eb;
+
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+
+    --accent-purple: #7c3aed;
+    --accent-purple-hover: #6d28d9;
+    --success: #059669;
+    --warning: #d97706;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ✨ Core Layout Mechanics */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: var(--transition-smooth);
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 480px;
+    /* Perfect tracking size for mobile screens */
+    margin: 0 auto;
+}
+
+/* 🏢 Premium Fixed Navbar */
+.navbar {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-smooth);
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-btn {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-btn.active {
+    background-color: var(--accent-purple);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.theme-toggle-btn {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.theme-toggle-btn:hover {
+    background-color: var(--bg-card);
+}
+
+/* 📋 Collapsible Task Cards Layout */
+.task-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition-smooth);
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent-purple);
+}
+
+.task-header-row {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.02);
+    user-select: none;
+}
+
+.task-title-area {
+    flex-grow: 1;
+}
+
+.task-inline-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 15px;
+    padding-right: 16px;
+}
+
+/* 🔒 Structural Proof Collapsible Switch */
+.proof-checkbox-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.proof-checkbox-wrap span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.proof-checkbox-wrap input[type="checkbox"] {
+    cursor: pointer;
+    accent-color: var(--accent-purple);
+    width: 14px;
+    height: 14px;
+}
+
+/* 📝 Inner Content Area Details */
+.task-body-content {
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.important-note-container {
+    background-color: rgba(245, 158, 11, 0.1);
+    border-left: 4px solid var(--warning);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+}
+
+.note-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--warning);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.note-content {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-primary);
+}
+
+/* 🚀 Interactive Action Elements */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    color: #ffffff;
+    background-color: var(--accent-purple);
+    text-align: center;
+}
+
+.action-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+input[type="file"] {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+input[type="file"]::-webkit-file-upload-button {
+    background: var(--accent-purple);
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+    font-weight: 600;
+}
