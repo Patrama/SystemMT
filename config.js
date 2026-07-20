@@ -4,7 +4,7 @@
  */
 window.APP_CONFIG = {
   // 🌐 Update this with your live production Vercel URL!
-  vercelGatewayUrl: "https://ivy-seven-phi.vercel.app",
+  vercelGatewayUrl: "https://ivy-null-shell.vercel.app/",
 
   // --- Geofencing & Location Safeguards ---
   officeLocation: {
