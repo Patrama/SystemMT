@@ -30,11 +30,36 @@ function createTasksComponent() {
   const container = document.createElement("div");
   container.style.width = "100%";
 
-  // 👤 Clean header context: team configuration removed per structural guidelines
+  // 👤 Header generation logic
   const header = document.createElement("h3");
-  header.innerText = `👤 ${state.user.name}`;
   header.style.cssText =
-    "margin-bottom: 20px; font-size: 16px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;";
+    "margin-bottom: 20px; font-size: 16px; font-weight: 600; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;";
+
+  // Extract the raw team members from the first available task if present
+  let teamString = "";
+  if (
+    state.tasks.length > 0 &&
+    (state.tasks[0]["Team"] || state.tasks[0]["team"])
+  ) {
+    const rawTeam = state.tasks[0]["Team"] || state.tasks[0]["team"];
+
+    // Split the chips, clean spacing, and filter out the current logged-in user
+    const totalTeamList = rawTeam.split(",").map((name) => name.trim());
+    const otherMembers = totalTeamList.filter(
+      (name) => name.toLowerCase() !== state.user.name.toLowerCase(),
+    );
+
+    // Format the remaining team members with dashes if they exist
+    if (otherMembers.length > 0) {
+      teamString = ` # ${otherMembers.join(" - ")}`;
+    }
+  }
+
+  // Construct the header with distinct styling for the user and their team partners
+  header.innerHTML = `
+    <span>👤 ${state.user.name}</span>
+    <span style="font-size: 13px; color: var(--text-secondary); font-weight: 500; text-transform: none; letter-spacing: 0px;">${teamString}</span>
+  `;
   container.appendChild(header);
 
   if (state.tasks.length === 0) {
