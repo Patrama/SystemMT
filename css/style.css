@@ -41,6 +41,10 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 /* ✨ Core Layout Mechanics */
 * {
   box-sizing: border-box;
@@ -52,6 +56,8 @@
     BlinkMacSystemFont,
     Roboto,
     sans-serif;
+
+  scrollbar-width: none;
 }
 
 body {
@@ -63,9 +69,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  overflow-y: hidden;
-  overflow-x: hidden;
 }
 
 .app-container {
