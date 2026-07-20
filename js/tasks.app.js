@@ -59,7 +59,7 @@ function createTasksComponent() {
     titleArea.className = "task-title-area";
     titleArea.innerHTML = `
             <div class="task-inline-row">
-                <span>🏢 ${task["Client Name"] || "N/A"}</span>
+                <span>🏠 ${task["Client Name"] || "N/A"}</span>
                 <span style="font-weight: 500; opacity: 0.7; font-size: 14px;">🎯 ${task["Task"] || "N/A"}</span>
             </div>
         `;
