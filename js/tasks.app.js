@@ -30,37 +30,21 @@ function createTasksComponent() {
   const container = document.createElement("div");
   container.style.width = "100%";
 
-  // 1. Extract the raw team members from the first available task if present
-  let teamString = "";
-  if (state.tasks.length > 0) {
-    const rawTeam = state.tasks[0]["Team"] || state.tasks[0]["team"] || "";
-
-    if (rawTeam) {
-      const totalTeamList = rawTeam.split(",").map((name) => name.trim());
-      const otherMembers = totalTeamList.filter(
-        (name) => name.toLowerCase() !== state.user.name.toLowerCase(),
-      );
-
-      if (otherMembers.length > 0) {
-        teamString = ` # ${otherMembers.join(" - ")}`;
-      }
-    }
-  }
-
-  // 2. Create the header element with hardcoded structural fallback styling
+  // 1. Clean User Header (Keeps username clean, teams move to specific cards)
   const header = document.createElement("h3");
   header.style.cssText =
     "margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;";
-
-  header.innerHTML = `
-    <span style="color: inherit;">👤 ${state.user.name}</span>
-    <span style="font-size: 13px; color: #8a99ad; font-weight: 500; text-transform: none; letter-spacing: 0px;">${teamString}</span>
-  `;
-
+  header.innerHTML = `<span>👤 ${state.user.name}</span>`;
   container.appendChild(header);
 
-  // 3. Fallback check - returns early ONLY if there are no tasks
-  if (state.tasks.length === 0) {
+  // 2. Filter out completed tasks completely on the frontend if marked "TRUE" or "Done" in spreadsheet
+  const activeTasks = state.tasks.filter((task) => {
+    const doneVal = (task["Done"] || task["done"] || "").trim().toLowerCase();
+    return doneVal !== "true" && doneVal !== "yes" && doneVal !== "checked";
+  });
+
+  // 3. Fallback check for zero active items
+  if (activeTasks.length === 0) {
     const noTasksMsg = document.createElement("p");
     noTasksMsg.style.cssText =
       "text-align:center; margin-top:30px; color: var(--text-secondary);";
@@ -69,8 +53,8 @@ function createTasksComponent() {
     return container;
   }
 
-  // 4. RESTORED LOOP: Process and render the task cards
-  state.tasks.forEach((task, index) => {
+  // 4. Render Active Tasks Loop
+  activeTasks.forEach((task, index) => {
     const card = document.createElement("div");
     card.className = "task-card";
     const taskKey = `${task["Client Name"] || "Client"}_${index}`;
@@ -80,29 +64,60 @@ function createTasksComponent() {
     }
     const isCollapsed = state.collapsedTasks[taskKey];
 
+    // 🔍 Parse dynamic card-level team assignment
+    let teamString = "";
+    const rawTeam = task["Team"] || task["team"] || "";
+    if (rawTeam) {
+      const totalTeamList = rawTeam.split(",").map((name) => name.trim());
+      const otherMembers = totalTeamList.filter(
+        (name) => name.toLowerCase() !== state.user.name.toLowerCase(),
+      );
+      if (otherMembers.length > 0) {
+        teamString = ` <span style="font-size: 12px; color: #8a99ad; font-weight: 500; text-transform: none; opacity: 0.8;"># ${otherMembers.join(" - ")}</span>`;
+      }
+    }
+
+    // 📅 Format Date context layout (Placed right beneath Client Name)
+    const dateValue = task["Date"] || task["date"] || "";
+    const dateLayout = dateValue
+      ? `<div style="font-size: 12px; color: #8a99ad; margin-top: 2px; font-weight: 500;">📅 ${dateValue}</div>`
+      : "";
+
+    // ⏳ Handle dynamic Hours override vs Important Note content logic
+    const hoursValue = task["Hours"] || task["hours"] || "";
+    let noteTitle = "⚠️ IMPORTANT NOTE";
+    let noteContent = task["Note"] || "No explicit warnings attached.";
+
+    if (hoursValue) {
+      noteTitle = "⚠️ REQUESTED HOURS";
+      noteContent = `${hoursValue} Hours`;
+    }
+
     const cardHeader = document.createElement("div");
     cardHeader.className = "task-header-row";
+    cardHeader.style.cursor = "pointer";
 
+    // Reconstruct title layout with custom task-level subheaders
     const titleArea = document.createElement("div");
     titleArea.className = "task-title-area";
+    titleArea.style.width = "100%";
     titleArea.innerHTML = `
-            <div class="task-inline-row">
-                <span>🏠 ${task["Client Name"] || "N/A"}</span>
-                <span style="font-weight: 500; opacity: 0.7; font-size: 14px;">🎯 ${task["Task"] || "N/A"}</span>
+            <div class="task-inline-row" style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
+                <div>
+                  <span style="font-weight: 600; font-size: 16px;">🏠 ${task["Client Name"] || "N/A"}</span>
+                  ${dateLayout}
+                </div>
+                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
+                  <span style="font-weight: 500; opacity: 0.7; font-size: 14px;">🎯 ${task["Task"] || "N/A"}</span>
+                  <div>${teamString}</div>
+                </div>
             </div>
         `;
     cardHeader.appendChild(titleArea);
 
-    const checkboxWrap = document.createElement("div");
-    checkboxWrap.className = "proof-checkbox-wrap";
-    checkboxWrap.innerHTML = `<span>Proof</span>`;
-
-    const checkboxInput = document.createElement("input");
-    checkboxInput.type = "checkbox";
-    checkboxInput.id = `chk-${taskKey}`;
-    checkboxInput.checked = isCollapsed;
-    checkboxInput.onchange = (e) => {
-      state.collapsedTasks[taskKey] = e.target.checked;
+    // Click handler to toggle layout visibility states
+    cardHeader.onclick = () => {
+      state.collapsedTasks[taskKey] = !state.collapsedTasks[taskKey];
       localStorage.setItem(
         `collapsed_tasks_${state.user.name}`,
         JSON.stringify(state.collapsedTasks),
@@ -110,22 +125,9 @@ function createTasksComponent() {
       renderView();
     };
 
-    checkboxWrap.appendChild(checkboxInput);
-    cardHeader.appendChild(checkboxWrap);
-
-    cardHeader.onclick = (e) => {
-      if (
-        e.target.closest(".proof-checkbox-wrap") ||
-        e.target.type === "checkbox"
-      )
-        return;
-      state.collapsedTasks[taskKey] = !state.collapsedTasks[taskKey];
-      renderView();
-    };
-
     card.appendChild(cardHeader);
 
-    // 🔗 Fixed Absolute WhatsApp URL parsing logic
+    // 🔗 Outbound Absolute Route Validator for Messaging Redirects
     let contactUrl = task["Client Contact Person"] || "#";
     if (
       contactUrl !== "#" &&
@@ -140,8 +142,8 @@ function createTasksComponent() {
     cardBody.style.display = isCollapsed ? "none" : "block";
     cardBody.innerHTML = `
             <div class="important-note-container">
-                <div class="note-title">⚠️ Important Note</div>
-                <div class="note-content">${task["Note"] || "No explicit warnings attached."}</div>
+                <div class="note-title">${noteTitle}</div>
+                <div class="note-content">${noteContent}</div>
             </div>
             <div style="display: flex; gap: 12px; margin-bottom: 16px;">
                 <a href="${contactUrl}" target="_blank" class="action-btn" style="flex: 1; padding: 10px; font-size: 13px;">📞 Contact</a>
