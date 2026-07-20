@@ -1,20 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="light">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <title>Enterprise Portal</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
     <!-- Target injection window frame for runtime script modules -->
     <main id="app-viewport">
-        <div style="text-align:center; padding-top: 50px;">Initial System Handshake Routing...</div>
+      <div style="text-align: center; padding-top: 50px">
+        Initial System Handshake Routing...
+      </div>
     </main>
 
     <!-- Execution Sequence Script Stack -->
-    <script src="config.js"></script>
-    <script src="js/app.js"></script>
-</body>
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/user.app.js"></script>
+    <script src="js/tasks.app.js"></script>
+    <script src="js/absence.app.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>
