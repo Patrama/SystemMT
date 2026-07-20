@@ -89,8 +89,8 @@ function createTasksComponent() {
     let noteContent = task["Note"] || "No explicit warnings attached.";
 
     if (hoursValue) {
-      noteTitle = "⚠️ REQUESTED HOURS";
-      noteContent = `${hoursValue} Hours`;
+      noteTitle = `⚠️ ${hoursValue}`;
+      // noteContent = `${hoursValue} Hours`;
     }
 
     const cardHeader = document.createElement("div");
