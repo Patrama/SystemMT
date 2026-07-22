@@ -107,26 +107,26 @@ function createTasksComponent() {
     clientName.textContent = `🏠 ${task["Client Name"] || "N/A"}`;
     leftColumn.appendChild(clientName);
 
-    if (dateValue) {
-      const dateLine = document.createElement("span");
-      dateLine.className = "task-meta";
-      dateLine.textContent = `📅 ${dateValue}`;
-      leftColumn.appendChild(dateLine);
-    }
-
-    const rightColumn = document.createElement("div");
-    rightColumn.className = "task-header-secondary";
-
     const taskName = document.createElement("span");
     taskName.className = "task-subtitle";
     taskName.textContent = `🎯 ${task["Task"] || "N/A"}`;
-    rightColumn.appendChild(taskName);
+    leftColumn.appendChild(taskName);
+
+    const rightColumn = document.createElement("div");
+    rightColumn.className = "task-header-secondary";
 
     if (teamString) {
       const teamLine = document.createElement("span");
       teamLine.className = "task-chip";
       teamLine.textContent = `# ${teamString}`;
       rightColumn.appendChild(teamLine);
+    }
+
+    if (dateValue) {
+      const dateLine = document.createElement("span");
+      dateLine.className = "task-meta";
+      dateLine.textContent = `📅 ${dateValue}`;
+      rightColumn.appendChild(dateLine);
     }
 
     const collapseIndicator = document.createElement("span");
