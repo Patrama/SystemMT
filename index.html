@@ -4,17 +4,17 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f3f4f6" />
     <title>Enterprise Portal</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <!-- Target injection window frame for runtime script modules -->
-    <main id="app-viewport">
-      <div style="text-align: center; padding-top: 50px">
-        Initial System Handshake Routing...
-      </div>
+    <main id="app-viewport" class="app-shell">
+      <div class="loading-state">Initial System Handshake Routing...</div>
     </main>
 
     <!-- Execution Sequence Script Stack -->

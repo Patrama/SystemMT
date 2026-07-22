@@ -28,32 +28,40 @@ async function refreshTasks() {
 
 function createTasksComponent() {
   const container = document.createElement("div");
-  container.style.width = "100%";
+  container.className = "content-stack";
 
-  // 1. Clean User Header (Keeps username clean, teams move to specific cards)
-  const header = document.createElement("h3");
-  header.style.cssText =
-    "margin-bottom: 20px; font-size: 16px; font-weight: 600; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;";
-  header.innerHTML = `<span>👤 ${state.user.name}</span>`;
+  const header = document.createElement("div");
+  header.className = "section-header";
+  const headerCopy = document.createElement("div");
+
+  const headerTitle = document.createElement("h2");
+  headerTitle.className = "page-title";
+  headerTitle.textContent = `👤 ${state.user.name}`;
+
+  const headerDescription = document.createElement("p");
+  headerDescription.className = "page-copy";
+  headerDescription.textContent = "Active task queue assigned to your scope.";
+
+  headerCopy.appendChild(headerTitle);
+  headerCopy.appendChild(headerDescription);
+  header.appendChild(headerCopy);
   container.appendChild(header);
 
-  // 2. Filter out completed tasks completely on the frontend if marked "TRUE" or "Done" in spreadsheet
   const activeTasks = state.tasks.filter((task) => {
     const doneVal = (task["Done"] || task["done"] || "").trim().toLowerCase();
     return doneVal !== "true" && doneVal !== "yes" && doneVal !== "checked";
   });
 
-  // 3. Fallback check for zero active items
   if (activeTasks.length === 0) {
-    const noTasksMsg = document.createElement("p");
-    noTasksMsg.style.cssText =
-      "text-align:center; margin-top:30px; color: var(--text-secondary);";
-    noTasksMsg.innerText = "No current tasks assigned to your scope.";
+    const noTasksMsg = document.createElement("div");
+    noTasksMsg.className = "empty-state";
+    noTasksMsg.textContent = "No current tasks assigned to your scope.";
     container.appendChild(noTasksMsg);
     return container;
   }
 
-  // 4. Render Active Tasks Loop
+  const fragment = document.createDocumentFragment();
+
   activeTasks.forEach((task, index) => {
     const card = document.createElement("div");
     card.className = "task-card";
@@ -73,49 +81,59 @@ function createTasksComponent() {
         (name) => name.toLowerCase() !== state.user.name.toLowerCase(),
       );
       if (otherMembers.length > 0) {
-        teamString = ` <span style="font-size: 12px; color: #8a99ad; font-weight: 500; text-transform: none; opacity: 0.8;"># ${otherMembers.join(" - ")}</span>`;
+        teamString = otherMembers.join(" · ");
       }
     }
 
-    // 📅 Format Date context layout (Placed right beneath Client Name)
     const dateValue = task["Date"] || task["date"] || "";
-    const dateLayout = dateValue
-      ? `<div style="font-size: 12px; color: #8a99ad; margin-top: 2px; font-weight: 500;">📅 ${dateValue}</div>`
-      : "";
-
-    // ⏳ Handle dynamic Hours override vs Important Note content logic
     const hoursValue = task["Hours"] || task["hours"] || "";
-    let noteTitle = "⚠️ IMPORTANT NOTE";
-    let noteContent = task["Note"] || "No explicit warnings attached.";
-
-    if (hoursValue) {
-      noteTitle = `⚠️ ${hoursValue}`;
-      // noteContent = `${hoursValue} Hours`;
-    }
+    const noteTitle = hoursValue ? `⚠️ ${hoursValue}` : "⚠️ IMPORTANT NOTE";
+    const noteContent = task["Note"] || "No explicit warnings attached.";
 
     const cardHeader = document.createElement("div");
     cardHeader.className = "task-header-row";
-    cardHeader.style.cursor = "pointer";
 
-    // Reconstruct title layout with custom task-level subheaders
     const titleArea = document.createElement("div");
     titleArea.className = "task-title-area";
-    titleArea.style.width = "100%";
-    titleArea.innerHTML = `
-            <div class="task-inline-row" style="display: flex; justify-content: space-between; align-items: baseline; width: 100%;">
-                <div>
-                  <span style="font-weight: 600; font-size: 16px;">🏠 ${task["Client Name"] || "N/A"}</span>
-                  ${dateLayout}
-                </div>
-                <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;">
-                  <span style="font-weight: 500; opacity: 0.7; font-size: 14px;">🎯 ${task["Task"] || "N/A"}</span>
-                  <div>${teamString}</div>
-                </div>
-            </div>
-        `;
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "task-inline-row";
+
+    const leftColumn = document.createElement("div");
+    leftColumn.className = "task-header-primary";
+
+    const clientName = document.createElement("span");
+    clientName.className = "task-client";
+    clientName.textContent = `🏠 ${task["Client Name"] || "N/A"}`;
+    leftColumn.appendChild(clientName);
+
+    if (dateValue) {
+      const dateLine = document.createElement("span");
+      dateLine.className = "task-meta";
+      dateLine.textContent = `📅 ${dateValue}`;
+      leftColumn.appendChild(dateLine);
+    }
+
+    const rightColumn = document.createElement("div");
+    rightColumn.className = "task-header-secondary";
+
+    const taskName = document.createElement("span");
+    taskName.className = "task-subtitle";
+    taskName.textContent = `🎯 ${task["Task"] || "N/A"}`;
+    rightColumn.appendChild(taskName);
+
+    if (teamString) {
+      const teamLine = document.createElement("span");
+      teamLine.className = "task-chip";
+      teamLine.textContent = `# ${teamString}`;
+      rightColumn.appendChild(teamLine);
+    }
+
+    titleRow.appendChild(leftColumn);
+    titleRow.appendChild(rightColumn);
+    titleArea.appendChild(titleRow);
     cardHeader.appendChild(titleArea);
 
-    // Click handler to toggle layout visibility states
     cardHeader.onclick = () => {
       state.collapsedTasks[taskKey] = !state.collapsedTasks[taskKey];
       localStorage.setItem(
@@ -127,51 +145,110 @@ function createTasksComponent() {
 
     card.appendChild(cardHeader);
 
-    // 🔗 Outbound Absolute Route Validator for Messaging Redirects
-    let contactUrl = task["Client Contact Person"] || "#";
-    if (
-      contactUrl !== "#" &&
-      !contactUrl.startsWith("http://") &&
-      !contactUrl.startsWith("https://")
-    ) {
-      contactUrl = `https://${contactUrl}`;
-    }
+    const contactUrl = normalizeUrl(task["Client Contact Person"]);
+    const locationUrl = normalizeUrl(task["Location"]);
 
     const cardBody = document.createElement("div");
     cardBody.className = "task-body-content";
     cardBody.style.display = isCollapsed ? "none" : "block";
-    cardBody.innerHTML = `
-            <div class="important-note-container">
-                <div class="note-title">${noteTitle}</div>
-                <div class="note-content">${noteContent}</div>
-            </div>
-            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                <a href="${contactUrl}" target="_blank" class="action-btn" style="flex: 1; padding: 10px; font-size: 13px;">📞 Contact</a>
-                <a href="${task["Location"] || "#"}" target="_blank" class="action-btn" style="flex: 1; padding: 10px; font-size: 13px; background-color: var(--border-color); color: var(--text-primary);">📍 Location</a>
-            </div>
-            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-weight:600; font-size:13px; color: var(--text-secondary);">Upload Verification (Max: ${task["MaxPhotos"] || 1}):</label>
-                <input type="file" id="proof-input-${index}" accept="image/*,video/*" style="width:100%;">
-                <textarea id="proof-note-${index}" placeholder="Write completion parameters or validation remarks here..." style="width:100%; height:70px; padding:10px; background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:8px; resize:none; font-size:13px; outline:none; font-family:inherit;"></textarea>
-                <button id="btn-upload-${index}" class="action-btn" style="background-color:var(--success); padding: 12px; font-size: 14px;">Submit Verification</button>
-            </div>
-        `;
+
+    const noteContainer = document.createElement("div");
+    noteContainer.className = "important-note-container";
+
+    const noteTitleNode = document.createElement("div");
+    noteTitleNode.className = "note-title";
+    noteTitleNode.textContent = noteTitle;
+
+    const noteContentNode = document.createElement("div");
+    noteContentNode.className = "note-content";
+    noteContentNode.textContent = noteContent;
+
+    noteContainer.appendChild(noteTitleNode);
+    noteContainer.appendChild(noteContentNode);
+
+    const linkRow = document.createElement("div");
+    linkRow.className = "form-grid";
+
+    const contactLink = document.createElement("a");
+    contactLink.href = contactUrl;
+    contactLink.target = "_blank";
+    contactLink.rel = "noreferrer";
+    contactLink.className = "action-btn";
+    contactLink.textContent = "📞 Contact";
+
+    const locationLink = document.createElement("a");
+    locationLink.href = locationUrl;
+    locationLink.target = "_blank";
+    locationLink.rel = "noreferrer";
+    locationLink.className = "action-btn secondary";
+    locationLink.textContent = "📍 Location";
+
+    linkRow.appendChild(contactLink);
+    linkRow.appendChild(locationLink);
+
+    const proofStack = document.createElement("div");
+    proofStack.className = "form-stack";
+
+    const proofLabel = document.createElement("label");
+    proofLabel.className = "field-label";
+    proofLabel.textContent = `Upload Verification (Max: ${task["MaxPhotos"] || 1})`;
+
+    const fileInput = document.createElement("input");
+    fileInput.className = "field-input";
+    fileInput.type = "file";
+    fileInput.accept = "image/*,video/*";
+
+    const noteInput = document.createElement("textarea");
+    noteInput.className = "field-textarea";
+    noteInput.placeholder =
+      "Write completion parameters or validation remarks here...";
+
+    const uploadButton = document.createElement("button");
+    uploadButton.className = "action-btn";
+    uploadButton.type = "button";
+    uploadButton.textContent = "Submit Verification";
+
+    proofStack.appendChild(proofLabel);
+    proofStack.appendChild(fileInput);
+    proofStack.appendChild(noteInput);
+    proofStack.appendChild(uploadButton);
+
+    cardBody.appendChild(noteContainer);
+    cardBody.appendChild(linkRow);
+    cardBody.appendChild(proofStack);
 
     card.appendChild(cardBody);
-    cardBody.querySelector(`#btn-upload-${index}`).onclick = () => {
-      uploadWorkProof(index, task["Client Name"]);
+    uploadButton.onclick = () => {
+      uploadWorkProof({
+        clientName: task["Client Name"],
+        fileInput,
+        noteInput,
+        uploadButton,
+      });
     };
 
-    container.appendChild(card);
+    fragment.appendChild(card);
   });
+
+  container.appendChild(fragment);
 
   return container;
 }
-// ... the rest of the state.tasks.forEach loop stays exactly the same ...
 
-async function uploadWorkProof(index, clientName) {
-  const fileInput = document.getElementById(`proof-input-${index}`);
-  const notes = document.getElementById(`proof-note-${index}`).value;
+function normalizeUrl(value) {
+  const urlValue = (value || "").trim();
+  if (!urlValue || urlValue === "#") return "#";
+  if (/^https?:\/\//i.test(urlValue)) return urlValue;
+  return `https://${urlValue}`;
+}
+
+async function uploadWorkProof({
+  clientName,
+  fileInput,
+  noteInput,
+  uploadButton,
+}) {
+  const notes = noteInput.value.trim();
 
   if (!fileInput || !fileInput.files[0]) {
     alert("Please load an element signature prior to transmission submission.");
@@ -180,6 +257,7 @@ async function uploadWorkProof(index, clientName) {
 
   const file = fileInput.files[0];
   const reader = new FileReader();
+  uploadButton.disabled = true;
 
   reader.onloadend = async () => {
     try {
@@ -210,6 +288,8 @@ async function uploadWorkProof(index, clientName) {
     } catch (err) {
       console.error(err);
       alert("Network routing sync fault.");
+    } finally {
+      uploadButton.disabled = false;
     }
   };
   reader.readAsDataURL(file);

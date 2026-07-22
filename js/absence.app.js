@@ -4,14 +4,18 @@
 
 function createAbsenceComponent() {
   const card = document.createElement("div");
-  card.className = "task-card";
-  card.style.padding = "24px";
+  card.className = "task-card page-card attendance-card";
 
   card.innerHTML = `
-        <h2 style="text-align:center; margin-bottom:12px; font-size: 20px;">Office Check-In System</h2>
-        <p id="geo-status" style="text-align:center; font-weight:600; margin-bottom:24px; color:var(--warning); font-size:13px; line-height: 1.4;">Verifying structural presence signatures...</p>
-        <button id="btn-checkin" class="action-btn" style="width:100%; padding:14px; font-size:15px; margin-bottom:12px; background-color:var(--success);" disabled>Check In (Arrival)</button>
-        <button id="btn-checkout" class="action-btn" style="width:100%; padding:14px; font-size:15px; background-color:var(--border-color); color: var(--text-primary);" disabled>Check Out (Departure)</button>
+      <div class="section-header section-header--center">
+      <h2 class="page-title">Office Check-In System</h2>
+      <p class="page-copy">Location access is verified before attendance actions are enabled.</p>
+    </div>
+    <p id="geo-status" class="status-text" role="status" aria-live="polite">Verifying structural presence signatures...</p>
+      <div class="form-stack" style="margin-top: 20px;">
+      <button id="btn-checkin" class="action-btn" type="button" style="background: linear-gradient(135deg, var(--success), var(--accent-secondary));" disabled>Check In (Arrival)</button>
+      <button id="btn-checkout" class="action-btn secondary" type="button" disabled>Check Out (Departure)</button>
+    </div>
     `;
 
   const btnIn = card.querySelector("#btn-checkin");
@@ -42,8 +46,13 @@ function createAbsenceComponent() {
       (err) => {
         statusText.innerText =
           "Hardware GPS Query Error. Lock execution barred.";
+        statusText.style.color = "var(--warning)";
       },
-      { enableHighAccuracy: true },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000,
+      },
     );
   } else {
     statusText.innerText =
