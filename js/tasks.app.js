@@ -129,10 +129,20 @@ function createTasksComponent() {
       rightColumn.appendChild(teamLine);
     }
 
+    const collapseIndicator = document.createElement("span");
+    collapseIndicator.className = "task-toggle-indicator";
+    collapseIndicator.setAttribute("aria-hidden", "true");
+    collapseIndicator.textContent = isCollapsed ? "▸" : "▾";
+
     titleRow.appendChild(leftColumn);
     titleRow.appendChild(rightColumn);
     titleArea.appendChild(titleRow);
     cardHeader.appendChild(titleArea);
+    cardHeader.appendChild(collapseIndicator);
+
+    if (isCollapsed) {
+      card.classList.add("is-collapsed");
+    }
 
     cardHeader.onclick = () => {
       state.collapsedTasks[taskKey] = !state.collapsedTasks[taskKey];

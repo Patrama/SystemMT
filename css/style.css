@@ -148,11 +148,11 @@ textarea:focus-visible {
   top: calc(env(safe-area-inset-top) + 10px);
   z-index: 10;
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-wrap: nowrap;
+  gap: 10px;
   justify-content: space-between;
   align-items: center;
-  padding: 14px;
+  padding: 10px 12px;
   border: 1px solid var(--border-color);
   border-radius: var(--card-radius);
   background: var(--bg-surface);
@@ -162,8 +162,9 @@ textarea:focus-visible {
 
 .nav-buttons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-width: 0;
 }
 
 .nav-btn,
@@ -172,10 +173,10 @@ textarea:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  min-height: 40px;
   border-radius: var(--control-radius);
   border: 1px solid transparent;
-  padding: 0 16px;
+  padding: 0 14px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -191,6 +192,7 @@ textarea:focus-visible {
   background: transparent;
   color: var(--text-secondary);
   gap: 6px;
+  white-space: nowrap;
 }
 
 .nav-btn:hover,
@@ -214,13 +216,14 @@ textarea:focus-visible {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-inset);
+  white-space: nowrap;
 }
 
 .task-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--card-radius);
-  margin-bottom: 16px;
+  border-radius: 18px;
+  margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition:
@@ -240,11 +243,11 @@ textarea:focus-visible {
 }
 
 .task-header-row {
-  padding: 18px;
+  padding: 14px 16px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   cursor: pointer;
   user-select: none;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
@@ -257,8 +260,8 @@ textarea:focus-visible {
 .task-inline-row {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  font-size: 15px;
+  gap: 12px;
+  font-size: 14px;
   width: 100%;
 }
 
@@ -266,7 +269,7 @@ textarea:focus-visible {
 .task-header-secondary {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -288,7 +291,7 @@ textarea:focus-visible {
 
 .task-client,
 .page-title {
-  font-size: 1.02rem;
+  font-size: 0.98rem;
   font-weight: 700;
 }
 
@@ -310,25 +313,49 @@ textarea:focus-visible {
   align-items: center;
   gap: 6px;
   max-width: 100%;
-  padding: 6px 10px;
+  padding: 4px 9px;
   border-radius: 999px;
   background: var(--bg-muted);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 600;
 }
 
+.task-toggle-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-inset);
+  font-size: 0.95rem;
+  line-height: 1;
+  transition:
+    transform var(--transition-smooth),
+    color var(--transition-smooth),
+    background-color var(--transition-smooth);
+}
+
+.task-card.is-collapsed .task-toggle-indicator {
+  transform: rotate(-90deg);
+}
+
 .task-body-content {
-  padding: 18px;
+  padding: 12px 16px 14px;
   border-top: 1px solid var(--border-color);
   background: rgba(0, 0, 0, 0.02);
 }
 
 .important-note-container {
-  padding: 14px 14px 14px 16px;
-  border-radius: 16px;
-  margin-bottom: 16px;
+  padding: 12px 13px 12px 14px;
+  border-radius: 14px;
+  margin-bottom: 12px;
   background: color-mix(in srgb, var(--warning) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 24%, var(--border-color));
   border-left: 4px solid var(--warning);
@@ -344,8 +371,8 @@ textarea:focus-visible {
 }
 
 .note-content {
-  font-size: 0.92rem;
-  line-height: 1.55;
+  font-size: 0.88rem;
+  line-height: 1.45;
   color: var(--text-primary);
 }
 
@@ -353,7 +380,7 @@ textarea:focus-visible {
 .form-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .content-stack {
@@ -363,7 +390,7 @@ textarea:focus-visible {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .form-grid .action-btn {
@@ -373,7 +400,7 @@ textarea:focus-visible {
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .field-label,
@@ -397,12 +424,12 @@ input[type="file"] {
 
 .field-input,
 .field-textarea {
-  min-height: 46px;
-  padding: 12px 14px;
+  min-height: 42px;
+  padding: 10px 12px;
 }
 
 .field-textarea {
-  min-height: 84px;
+  min-height: 72px;
   resize: vertical;
 }
 
@@ -433,11 +460,11 @@ input[type="file"]::-webkit-file-upload-button {
     var(--accent-primary),
     var(--accent-secondary)
   );
-  box-shadow: 0 14px 24px rgba(29, 78, 216, 0.18);
+  box-shadow: 0 12px 20px rgba(29, 78, 216, 0.18);
 }
 
 .action-btn:hover {
-  box-shadow: 0 16px 30px rgba(29, 78, 216, 0.24);
+  box-shadow: 0 14px 24px rgba(29, 78, 216, 0.22);
 }
 
 .action-btn[disabled],
@@ -456,8 +483,8 @@ input[type="file"]::-webkit-file-upload-button {
 
 .auth-card,
 .attendance-card {
-  padding: clamp(20px, 5vw, 28px);
-  margin-top: min(12vh, 100px);
+  padding: clamp(18px, 4vw, 24px);
+  margin-top: min(7vh, 56px);
 }
 
 .page-title {
@@ -480,8 +507,8 @@ input[type="file"]::-webkit-file-upload-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .section-header--center {
@@ -494,6 +521,10 @@ input[type="file"]::-webkit-file-upload-button {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.section-header .page-copy {
+  margin-top: 3px;
 }
 
 .section-header .page-copy {
@@ -510,7 +541,8 @@ input[type="file"]::-webkit-file-upload-button {
   }
 
   .navbar {
-    padding: 12px;
+    padding: 10px;
+    flex-wrap: wrap;
   }
 
   .nav-buttons,
@@ -536,7 +568,7 @@ input[type="file"]::-webkit-file-upload-button {
 
   .task-header-row,
   .task-body-content {
-    padding: 16px;
+    padding: 12px 14px;
   }
 }
 

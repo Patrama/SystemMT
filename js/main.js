@@ -99,7 +99,11 @@ function createNavbarComponent() {
     refreshThemeToggleLabel(themeBtn);
   };
 
+  const navRight = document.createElement("div");
+  navRight.className = "nav-buttons";
+  navRight.appendChild(themeBtn);
+
   nav.appendChild(leftGroup);
-  nav.appendChild(themeBtn);
+  nav.appendChild(navRight);
   return nav;
 }
