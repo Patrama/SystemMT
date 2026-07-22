@@ -280,7 +280,7 @@ async function uploadWorkProof({
       };
 
       const response = await fetch(
-        `${window.APP_CONFIG.vercelGatewayUrl}/api/tasks`,
+        `${window.APP_CONFIG.vercelGatewayUrl}/api/upload`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
