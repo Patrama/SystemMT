@@ -80,17 +80,26 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
 
 async function submitAttendance(type) {
   const now = new Date();
+
+  // Format local date (DD/MM/YYYY) & time (HH:MM:SS) cleanly
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = now.getFullYear();
+  const formattedDate = `${day}/${month}/${year}`;
+  const formattedTime = now.toLocaleTimeString("en-GB");
+
   try {
     const payload = {
       action: "checkInOrOut",
       type: type,
       userName: state.user.name,
-      date: now.toLocaleDateString(),
-      time: now.toLocaleTimeString(),
+      date: formattedDate,
+      time: formattedTime,
     };
 
+    // 🔗 Target /api/absence instead of /api/action
     const response = await fetch(
-      `${window.APP_CONFIG.vercelGatewayUrl}/api/action`,
+      `${window.APP_CONFIG.vercelGatewayUrl}/api/absence`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
