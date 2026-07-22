@@ -290,7 +290,7 @@ async function uploadWorkProof({
 
       if (response.ok) {
         alert(
-          "Upload verification signature passed to gateway processing center.",
+          "Upload Successful ✅\n\nYour proof of work has been securely transmitted to the server.",
         );
       } else {
         alert("Gateway validation reject pipeline executed.");
