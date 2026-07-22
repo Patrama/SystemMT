@@ -100,7 +100,7 @@ async function submitAttendance(type) {
 
     if (response.ok) {
       alert(
-        `Attendance protocol [Check-${type.toUpperCase()}] executed cleanly.`,
+        `Attendance protocol ${state.user.name} [Check-${type.toUpperCase()}] executed cleanly.`,
       );
     } else {
       alert("Attendance state parsing rejection fault.");

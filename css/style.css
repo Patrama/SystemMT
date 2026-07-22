@@ -50,6 +50,7 @@
 }
 
 * {
+  scrollbar-width: none;
   box-sizing: border-box;
 }
 
@@ -243,34 +244,40 @@ textarea:focus-visible {
 }
 
 .task-header-row {
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   user-select: none;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
 }
 
 .task-title-area {
+  flex: 1 1 auto;
+  min-width: 0;
   width: 100%;
 }
 
 .task-inline-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  font-size: 13px;
   width: 100%;
+  align-items: start;
+  grid-auto-flow: column;
 }
 
 .task-header-primary,
 .task-header-secondary {
+  width: fit-content;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
+  flex-wrap: nowrap;
+  flex-direction: row;
 }
 
 .task-header-primary {
@@ -291,7 +298,7 @@ textarea:focus-visible {
 
 .task-client,
 .page-title {
-  font-size: 0.98rem;
+  font-size: 0.94rem;
   font-weight: 700;
 }
 
@@ -318,7 +325,7 @@ textarea:focus-visible {
   background: var(--bg-muted);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
 }
 
@@ -326,8 +333,8 @@ textarea:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   flex: 0 0 auto;
   border-radius: 999px;
   border: 1px solid var(--border-color);
@@ -347,15 +354,15 @@ textarea:focus-visible {
 }
 
 .task-body-content {
-  padding: 12px 16px 14px;
+  padding: 10px 14px 12px;
   border-top: 1px solid var(--border-color);
   background: rgba(0, 0, 0, 0.02);
 }
 
 .important-note-container {
-  padding: 12px 13px 12px 14px;
-  border-radius: 14px;
-  margin-bottom: 12px;
+  padding: 10px 12px 10px 13px;
+  border-radius: 12px;
+  margin-bottom: 10px;
   background: color-mix(in srgb, var(--warning) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--warning) 24%, var(--border-color));
   border-left: 4px solid var(--warning);
@@ -364,15 +371,15 @@ textarea:focus-visible {
 .note-title {
   margin-bottom: 4px;
   color: var(--warning);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .note-content {
-  font-size: 0.88rem;
-  line-height: 1.45;
+  font-size: 0.84rem;
+  line-height: 1.38;
   color: var(--text-primary);
 }
 
@@ -380,7 +387,7 @@ textarea:focus-visible {
 .form-stack {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .content-stack {
@@ -390,7 +397,8 @@ textarea:focus-visible {
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
+  grid-auto-flow: column;
 }
 
 .form-grid .action-btn {
@@ -400,7 +408,7 @@ textarea:focus-visible {
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .field-label,
@@ -424,12 +432,12 @@ input[type="file"] {
 
 .field-input,
 .field-textarea {
-  min-height: 42px;
-  padding: 10px 12px;
+  min-height: 40px;
+  padding: 9px 11px;
 }
 
 .field-textarea {
-  min-height: 72px;
+  min-height: 64px;
   resize: vertical;
 }
 
@@ -460,11 +468,11 @@ input[type="file"]::-webkit-file-upload-button {
     var(--accent-primary),
     var(--accent-secondary)
   );
-  box-shadow: 0 12px 20px rgba(29, 78, 216, 0.18);
+  box-shadow: 0 10px 18px rgba(29, 78, 216, 0.18);
 }
 
 .action-btn:hover {
-  box-shadow: 0 14px 24px rgba(29, 78, 216, 0.22);
+  box-shadow: 0 12px 22px rgba(29, 78, 216, 0.22);
 }
 
 .action-btn[disabled],
@@ -483,8 +491,8 @@ input[type="file"]::-webkit-file-upload-button {
 
 .auth-card,
 .attendance-card {
-  padding: clamp(18px, 4vw, 24px);
-  margin-top: min(7vh, 56px);
+  padding: clamp(16px, 3.5vw, 22px);
+  margin-top: min(5vh, 40px);
 }
 
 .page-title {
@@ -507,8 +515,8 @@ input[type="file"]::-webkit-file-upload-button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .section-header--center {
@@ -568,7 +576,7 @@ input[type="file"]::-webkit-file-upload-button {
 
   .task-header-row,
   .task-body-content {
-    padding: 12px 14px;
+    padding: 10px 12px;
   }
 }
 
@@ -578,14 +586,15 @@ input[type="file"]::-webkit-file-upload-button {
     gap: 14px;
   }
 
-  .task-header-row {
-    gap: 12px;
+  .task-inline-row {
+    gap: 8px;
+    font-size: 12px;
   }
 
   .task-client,
   .task-subtitle,
   .page-title {
-    font-size: 0.98rem;
+    font-size: 0.92rem;
   }
 
   .form-grid {
