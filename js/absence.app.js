@@ -109,7 +109,7 @@ async function submitAttendance(type) {
 
     if (response.ok) {
       alert(
-        `Absence ${state.user.name} [Check-${type.toUpperCase()}] executed cleanly.`,
+        `Absence [Check-${type.toUpperCase()}] ${state.user.name} successfully recorded at ${formattedTime} on ${formattedDate}.`,
       );
     } else {
       alert("Attendance state parsing rejection fault.");
