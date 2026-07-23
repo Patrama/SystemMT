@@ -2,6 +2,8 @@
  * ⏳ GEOGRAPHIC BOUND ATTENDANCE MONITOR
  */
 
+// js/absence.app.js
+
 function createAbsenceComponent() {
   const card = document.createElement("div");
   card.className = "task-card page-card attendance-card";
@@ -22,7 +24,16 @@ function createAbsenceComponent() {
   const btnOut = card.querySelector("#btn-checkout");
   const statusText = card.querySelector("#geo-status");
 
-  if (navigator.geolocation) {
+  // 🚀 CHECK BYPASS FLAG FIRST
+  const isBypassed =
+    String(state.user?.bypass || state.user?.Bypass).toUpperCase() === "TRUE";
+
+  if (isBypassed) {
+    statusText.innerText = "Location Bypass Active 🔓 Check-In Authorized.";
+    statusText.style.color = "var(--success)";
+    btnIn.disabled = false;
+    btnOut.disabled = false;
+  } else if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const distance = calculateHaversineDistance(

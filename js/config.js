@@ -8,10 +8,13 @@ window.APP_CONFIG = {
 
   // --- Geofencing & Location Safeguards ---
   officeLocation: {
-    latitude: -7.2423393, // Example coordinates (Surabaya)
+    latitude: -7.2423393,
     longitude: 112.6379209,
-    radiusMeters: 8.0, // Geofence strict activation barrier threshold
+    radiusMeters: 8.0,
   },
+
+  // ⏱️ Location Bypass Window Duration (in Milliseconds)
+  bypassDurationMs: 1 * 60 * 1000, // 1 minute (60,000 ms)
 
   // --- Hardcoded Network Anchor ---
   // Fallback SSID validation matching parameter for the native app check
