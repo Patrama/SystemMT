@@ -1,7 +1,10 @@
 /**
  * 🎛️ SYSTEM CONFIGURATION PANEL
  * Modify the values below to customize the behavior of your presence application.
+ *
+ * @format
  */
+
 window.APP_CONFIG = {
   // 🌐 Update this with your live production Vercel URL!
   vercelGatewayUrl: "https://mts-phi.vercel.app",
@@ -10,7 +13,7 @@ window.APP_CONFIG = {
   officeLocation: {
     latitude: -7.2423393,
     longitude: 112.6379209,
-    radiusMeters: 8.0,
+    radiusMeters: 10.0,
   },
 
   // ⏱️ Location Bypass Window Duration (in Milliseconds)
@@ -21,7 +24,7 @@ window.APP_CONFIG = {
   targetWifiSSID: "Office_Corp_Network",
 
   // --- Visual Configuration Options ---
-  defaultTheme: "auto", // Options: "auto" (system sync), "dark", "light"
+  defaultTheme: "light", // Options: "auto" (system sync), "dark", "light"
   enableHighContrast: false, // 💡 SET TO FALSE FOR SOFT PALETTE.
 
   // --- Login Persistence Management 🔒 ---
