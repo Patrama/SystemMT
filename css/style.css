@@ -1,5 +1,8 @@
+/** @format */
+
 :root {
   color-scheme: light;
+  --bg-accent-soft: rgba(29, 78, 216, 0.07);
   --bg-primary: #eef1f6;
   --bg-surface: rgba(255, 255, 255, 0.88);
   --bg-card: #f8fafc;
@@ -18,8 +21,10 @@
   --shadow-md: 0 16px 44px rgba(15, 23, 42, 0.14);
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
   --transition-smooth: 180ms cubic-bezier(0.2, 0, 0, 1);
-  --page-width: min(100%, 960px);
+  --page-width: min(100%, 1200px);
   --page-padding: clamp(14px, 3vw, 24px);
+  --task-grid-cols: 1fr;
+  --auth-card-width: 100%;
   --card-radius: 20px;
   --control-radius: 14px;
 }
@@ -30,6 +35,7 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
+  --bg-accent-soft: rgba(96, 165, 250, 0.06);
   --bg-primary: #0b1020;
   --bg-surface: rgba(15, 23, 42, 0.82);
   --bg-card: #111827;
@@ -54,22 +60,6 @@
   box-sizing: border-box;
 }
 
-html {
-  min-height: 100%;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(29, 78, 216, 0.18),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(14, 165, 233, 0.14),
-      transparent 26%
-    ),
-    var(--bg-primary);
-}
-
 body {
   margin: 0;
   min-height: 100vh;
@@ -82,18 +72,7 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(29, 78, 216, 0.18),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at top right,
-      rgba(14, 165, 233, 0.14),
-      transparent 26%
-    ),
-    var(--bg-primary);
+  background: var(--bg-primary);
   padding: calc(env(safe-area-inset-top) + 14px)
     calc(env(safe-area-inset-right) + 14px)
     calc(env(safe-area-inset-bottom) + 20px)
@@ -123,7 +102,7 @@ textarea:focus-visible {
 #app-viewport,
 .app-shell {
   width: 100%;
-  max-width: 960px;
+  max-width: var(--page-width);
   margin: 0 auto;
 }
 
@@ -174,7 +153,7 @@ textarea:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 44px;
   border-radius: var(--control-radius);
   border: 1px solid transparent;
   padding: 0 14px;
@@ -227,20 +206,12 @@ textarea:focus-visible {
   margin-bottom: 12px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
   transition:
     transform var(--transition-smooth),
     box-shadow var(--transition-smooth),
     border-color var(--transition-smooth);
-}
-
-.task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: color-mix(
-    in srgb,
-    var(--accent-primary) 42%,
-    var(--border-color)
-  );
 }
 
 .task-header-row {
@@ -359,7 +330,7 @@ textarea:focus-visible {
 .task-body-content {
   padding: 10px 14px 12px;
   border-top: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.02);
+  background: var(--bg-accent-soft);
 }
 
 .important-note-container {
@@ -496,6 +467,9 @@ input[type="file"]::-webkit-file-upload-button {
 .attendance-card {
   padding: clamp(16px, 3.5vw, 22px);
   margin-top: min(5vh, 40px);
+  width: var(--auth-card-width);
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .page-title {
@@ -547,6 +521,12 @@ input[type="file"]::-webkit-file-upload-button {
 }
 
 @media (max-width: 720px) {
+  .navbar {
+    background: var(--bg-primary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
   body {
     padding: 12px;
   }
@@ -580,6 +560,65 @@ input[type="file"]::-webkit-file-upload-button {
   .task-header-row,
   .task-body-content {
     padding: 10px 12px;
+  }
+}
+
+@media (min-width: 900px) {
+  :root {
+    --task-grid-cols: repeat(2, minmax(0, 1fr));
+    --auth-card-width: min(100%, 480px);
+    --page-padding: clamp(20px, 3vw, 32px);
+  }
+
+  .content-stack {
+    display: grid;
+    grid-template-columns: var(--task-grid-cols);
+    align-items: start;
+  }
+
+  .content-stack > .section-header {
+    grid-column: 1 / -1;
+  }
+
+  .content-stack > .empty-state {
+    grid-column: 1 / -1;
+  }
+
+  .navbar {
+    padding: 12px 18px;
+    gap: 14px;
+  }
+
+  .nav-buttons {
+    gap: 10px;
+  }
+
+  .nav-btn {
+    padding: 0 18px;
+  }
+}
+
+/* Hover lift / blur / shadow interactions only on precision pointers */
+@media (hover: hover) and (pointer: fine) {
+  .task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: color-mix(
+      in srgb,
+      var(--accent-primary) 42%,
+      var(--border-color)
+    );
+  }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

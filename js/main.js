@@ -1,12 +1,64 @@
 /**
  * 🗺️ MATRIX INTERFACE VIEW ROUTER & LIFE CYCLE INITIALIZER
+ *
+ * @format
  */
 
 document.addEventListener("DOMContentLoaded", async () => {
   initThemeManager();
-  await checkLoginPersistence();
-  renderView();
+  // Render the correct shell immediately (login or cached-session tasks view)
+  // without blocking first paint on the network round-trip.
+  renderInitialView();
+  // Then synchronize task data in the background and refresh when resolved.
+  const hadValidSession = await checkLoginPersistence();
+  if (hadValidSession) {
+    await refreshTasks();
+    if (state.currentView === "tasks") renderView();
+  } else if (state.currentView === "tasks") {
+    // Stored session existed but is expired/invalid — fall back to login.
+    state.currentView = "login";
+    renderView();
+  }
 });
+
+function renderInitialView() {
+  // Session persisted? Jump straight to the tasks shell with a sync placeholder.
+  const storedSession = localStorage.getItem("enterprise_session");
+  if (storedSession) {
+    try {
+      const session = JSON.parse(storedSession);
+      state.user = session.user;
+      state.currentView = "tasks";
+      const storedCollapse = localStorage.getItem(
+        `collapsed_tasks_${state.user.name}`,
+      );
+      state.collapsedTasks = storedCollapse ? JSON.parse(storedCollapse) : {};
+      // Render tasks from the sessionStorage cache instantly (if present),
+      // otherwise show the loading placeholder and let the fetch fill it in.
+      const cached = loadCachedTasks();
+      if (cached) {
+        state.tasks = cached;
+        renderView();
+      } else {
+        const viewport = document.getElementById("app-viewport");
+        if (viewport) {
+          viewport.replaceChildren(
+            (() => {
+              const el = document.createElement("div");
+              el.className = "loading-state";
+              el.textContent = "Synchronizing task queue...";
+              return el;
+            })(),
+          );
+        }
+      }
+      return;
+    } catch (e) {
+      localStorage.removeItem("enterprise_session");
+    }
+  }
+  renderView();
+}
 
 function renderView() {
   const viewport = document.getElementById("app-viewport");
@@ -38,7 +90,18 @@ function renderView() {
 function setCurrentView(nextView) {
   if (state.currentView === nextView) return;
   state.currentView = nextView;
+  // Cross-view transitions always rebuild the viewport.
+  if (nextView !== "tasks") {
+    renderView();
+    return;
+  }
+  // Entering tasks: render the cached queue instantly, then sync in background.
+  const cached = loadCachedTasks();
+  if (cached) state.tasks = cached;
   renderView();
+  refreshTasks().then(() => {
+    if (state.currentView === "tasks") renderView();
+  });
 }
 
 function createNavButton(label, viewName, icon) {

@@ -1,3 +1,5 @@
+<!-- @format -->
+
 <!doctype html>
 <html lang="en" data-theme="light">
   <head>
@@ -9,6 +11,38 @@
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f3f4f6" />
     <title>Enterprise Portal</title>
+    <meta
+      name="description"
+      content="Enterprise Portal — task queue, verification and office check-in system."
+    />
+    <!-- Inline theme bootstrap: applies persisted/system theme before first paint to avoid FOUC -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("app_theme") || "auto";
+          var dark =
+            stored === "dark" ||
+            (stored === "auto" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.setAttribute(
+            "data-theme",
+            dark ? "dark" : "light",
+          );
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", dark ? "#0b1020" : "#f3f4f6");
+        } catch (e) {
+          /* localStorage unavailable: keep default light theme */
+        }
+      })();
+    </script>
+    <!-- Inline SVG favicon: avoids the /favicon.ico round-trip -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='8'%20fill='%231d4ed8'/%3E%3Ctext%20x='16'%20y='23'%20font-size='18'%20text-anchor='middle'%20fill='white'%3E%E2%8F%B3%3C/text%3E%3C/svg%3E"
+    />
+    <!-- Warm the connection to the API gateway for the first request -->
+    <link rel="preconnect" href="https://mts-phi.vercel.app" crossorigin />
+    <link rel="dns-prefetch" href="https://mts-phi.vercel.app" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -18,11 +52,11 @@
     </main>
 
     <!-- Execution Sequence Script Stack -->
-    <script src="js/config.js"></script>
-    <script src="js/state.js"></script>
-    <script src="js/user.app.js"></script>
-    <script src="js/tasks.app.js"></script>
-    <script src="js/absence.app.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/config.js" defer></script>
+    <script src="js/state.js" defer></script>
+    <script src="js/user.app.js" defer></script>
+    <script src="js/tasks.app.js" defer></script>
+    <script src="js/absence.app.js" defer></script>
+    <script src="js/main.js" defer></script>
   </body>
 </html>

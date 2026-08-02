@@ -1,6 +1,37 @@
 /**
  * 📋 WORKFLOW TASK MANAGEMENT ENGINE
+ *
+ * @format
  */
+
+const TASKS_CACHE_KEY = "tasks_cache";
+const TASKS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+function loadCachedTasks() {
+  try {
+    const raw = sessionStorage.getItem(TASKS_CACHE_KEY);
+    if (!raw) return null;
+    const { tasks, cachedAt } = JSON.parse(raw);
+    if (!Array.isArray(tasks) || Date.now() - cachedAt > TASKS_CACHE_TTL_MS) {
+      sessionStorage.removeItem(TASKS_CACHE_KEY);
+      return null;
+    }
+    return tasks;
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveCachedTasks(tasks) {
+  try {
+    sessionStorage.setItem(
+      TASKS_CACHE_KEY,
+      JSON.stringify({ tasks, cachedAt: Date.now() }),
+    );
+  } catch (e) {
+    /* sessionStorage full or unavailable: skip caching */
+  }
+}
 
 async function refreshTasks() {
   try {
@@ -20,6 +51,7 @@ async function refreshTasks() {
     if (!response.ok) throw new Error("Task collection gateway error.");
     const result = await response.json();
     state.tasks = result.tasks || [];
+    saveCachedTasks(state.tasks);
   } catch (e) {
     console.error("Task synchronization pipeline failed:", e);
     state.tasks = [];
@@ -150,7 +182,11 @@ function createTasksComponent() {
         `collapsed_tasks_${state.user.name}`,
         JSON.stringify(state.collapsedTasks),
       );
-      renderView();
+      // Toggle only this card in the DOM — no full re-render, no input loss.
+      const nextCollapsed = state.collapsedTasks[taskKey];
+      card.classList.toggle("is-collapsed", nextCollapsed);
+      if (cardBody) cardBody.style.display = nextCollapsed ? "none" : "block";
+      collapseIndicator.textContent = nextCollapsed ? "▸" : "▾";
     };
 
     card.appendChild(cardHeader);

@@ -1,12 +1,16 @@
 /**
  * 🔒 AUTHENTICATION & SESSION PERSISTENCE ENGINE
+ *
+ * @format
  */
 
+// Validates a stored session without blocking first paint.
+// Returns true when the session is still valid and state has been restored.
 async function checkLoginPersistence() {
   const config = window.APP_CONFIG;
   const storedSession = localStorage.getItem("enterprise_session");
 
-  if (!storedSession) return;
+  if (!storedSession) return false;
 
   try {
     const session = JSON.parse(storedSession);
@@ -30,8 +34,7 @@ async function checkLoginPersistence() {
       );
       state.collapsedTasks = storedCollapse ? JSON.parse(storedCollapse) : {};
 
-      // Await data alignment before render
-      await refreshTasks();
+      return true;
     } else {
       localStorage.removeItem("enterprise_session");
     }
@@ -39,6 +42,7 @@ async function checkLoginPersistence() {
     console.error("Persistence validation layer crash.", e);
     localStorage.removeItem("enterprise_session");
   }
+  return false;
 }
 
 function saveSession(userData, token) {
@@ -150,8 +154,13 @@ function createLoginComponent() {
         );
         state.collapsedTasks = storedCollapse ? JSON.parse(storedCollapse) : {};
 
-        await refreshTasks();
+        // Render the cached queue instantly (if present), then sync in background.
+        const cached = loadCachedTasks();
+        if (cached) state.tasks = cached;
         renderView();
+        refreshTasks().then(() => {
+          if (state.currentView === "tasks") renderView();
+        });
       } else {
         loginButton.disabled = false;
         userIdInput.disabled = false;
