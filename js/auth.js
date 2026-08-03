@@ -14,29 +14,22 @@ async function checkLoginPersistence() {
 
   try {
     const session = JSON.parse(storedSession);
-    const now = Date.now();
-    let isValid = false;
 
-    if (config.persistenceStrategy === "daily") {
-      const sessionDate = new Date(session.timestamp).toDateString();
-      const currentDate = new Date(now).toDateString();
-      isValid = sessionDate === currentDate;
-    } else if (config.persistenceStrategy === "duration") {
-      isValid = now - session.timestamp < config.persistenceDurationMs;
-    }
+    // Verify active status with Google Sheets
+    const res = await fetch(`${config.vercelGatewayUrl}/api/session-check`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: session.user.id }),
+    });
+    const result = await res.json();
 
-    if (isValid) {
+    if (result.isLoggedIn) {
       state.user = session.user;
       state.currentView = "tasks";
-
-      const storedCollapse = localStorage.getItem(
-        `collapsed_tasks_${state.user.name}`,
-      );
-      state.collapsedTasks = storedCollapse ? JSON.parse(storedCollapse) : {};
-
       return true;
     } else {
       localStorage.removeItem("enterprise_session");
+      return false;
     }
   } catch (e) {
     console.error("Persistence validation layer crash.", e);

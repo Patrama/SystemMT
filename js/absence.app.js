@@ -1,33 +1,38 @@
 /**
  * ⏳ GEOGRAPHIC BOUND ATTENDANCE MONITOR
+ *
+ * @format
  */
-
-// js/absence.app.js
 
 function createAbsenceComponent() {
   const card = document.createElement("div");
   card.className = "task-card page-card attendance-card";
 
+  // Check if Bypass mode is active for this user
+  const isBypassed = Boolean(
+    state.user?.bypass ||
+    state.user?.Bypass ||
+    String(state.user?.bypass).toUpperCase() === "TRUE",
+  );
+
   card.innerHTML = `
-      <div class="section-header section-header--center">
+    <div class="section-header section-header--center">
       <h2 class="page-title">Office Check-In System</h2>
       <p class="page-copy">Location access is verified before attendance actions are enabled.</p>
     </div>
     <p id="geo-status" class="status-text" role="status" aria-live="polite">Verifying structural presence signatures...</p>
-      <div class="form-stack" style="margin-top: 20px;">
+    ${isBypassed ? '<span class="badge badge--success" style="display: block; text-align: center; margin-bottom: 10px;">⚡ Bypass Mode Active</span>' : ""}
+    <div class="form-stack" style="margin-top: 20px;">
       <button id="btn-checkin" class="action-btn" type="button" style="background: linear-gradient(135deg, var(--success), var(--accent-secondary));" disabled>Check In (Arrival)</button>
       <button id="btn-checkout" class="action-btn secondary" type="button" disabled>Check Out (Departure)</button>
     </div>
-    `;
+  `;
 
   const btnIn = card.querySelector("#btn-checkin");
   const btnOut = card.querySelector("#btn-checkout");
   const statusText = card.querySelector("#geo-status");
 
-  // 🚀 CHECK BYPASS FLAG FIRST
-  const isBypassed =
-    String(state.user?.bypass || state.user?.Bypass).toUpperCase() === "TRUE";
-
+  // 🚀 INITIAL VERIFICATION ON PAGE LOAD
   if (isBypassed) {
     statusText.innerText = "Location Bypass Active 🔓 Check-In Authorized.";
     statusText.style.color = "var(--success)";
@@ -52,12 +57,16 @@ function createAbsenceComponent() {
         } else {
           statusText.innerText = `Access Denied ❌ Out of Bounds. Distance: ${distance.toFixed(1)}m from office anchor point.`;
           statusText.style.color = "var(--warning)";
+          btnIn.disabled = true;
+          btnOut.disabled = true;
         }
       },
       (err) => {
         statusText.innerText =
           "Hardware GPS Query Error. Lock execution barred.";
         statusText.style.color = "var(--warning)";
+        btnIn.disabled = true;
+        btnOut.disabled = true;
       },
       {
         enableHighAccuracy: true,
@@ -70,8 +79,18 @@ function createAbsenceComponent() {
       "Geofencing Core modules unavailable on this architecture.";
   }
 
-  btnIn.onclick = () => submitAttendance("in");
-  btnOut.onclick = () => submitAttendance("out");
+  // 🔐 ATTACH GUARDED CLICK HANDLERS (Sub-Phase 2.1 Integration)
+  btnIn.onclick = () => {
+    validateLocationAndProceed((coords) => {
+      submitAttendance("in", coords);
+    });
+  };
+
+  btnOut.onclick = () => {
+    validateLocationAndProceed((coords) => {
+      submitAttendance("out", coords);
+    });
+  };
 
   return card;
 }
@@ -89,10 +108,69 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-async function submitAttendance(type) {
-  const now = new Date();
+/**
+ * 📍 Geolocation Guard
+ * Validates location permissions against user bypass state before executing attendance actions.
+ */
+function validateLocationAndProceed(onSuccess, onError) {
+  const userHasBypass = Boolean(
+    state.user?.bypass ||
+    state.user?.Bypass ||
+    String(state.user?.bypass).toUpperCase() === "TRUE",
+  );
 
-  // Format local date (DD/MM/YYYY) & time (HH:MM:SS) cleanly
+  // 1. Browser doesn't support Geolocation
+  if (!navigator.geolocation) {
+    if (userHasBypass) {
+      console.warn("Geolocation unsupported, but bypass mode is active.");
+      return onSuccess(null);
+    }
+    alert("❌ Geolocation is not supported by your browser.");
+    if (onError) onError("unsupported");
+    return;
+  }
+
+  // 2. Request current position
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      onSuccess({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+    },
+    (error) => {
+      if (userHasBypass) {
+        console.warn(
+          "Location permission denied, but user is under active Bypass.",
+        );
+        onSuccess(null);
+      } else {
+        alert(
+          "🔒 Location access denied. You must enable location services to record attendance.",
+        );
+        if (onError) onError("denied");
+      }
+    },
+    { enableHighAccuracy: true, timeout: 8000 },
+  );
+}
+
+async function submitAttendance(type, coords = null) {
+  const btnIn = document.querySelector("#btn-checkin");
+  const btnOut = document.querySelector("#btn-checkout");
+  const statusText = document.querySelector("#geo-status");
+
+  // 1. Instantly lock controls to prevent duplicate clicks (Debounce)
+  if (btnIn) btnIn.disabled = true;
+  if (btnOut) btnOut.disabled = true;
+
+  const originalStatus = statusText ? statusText.innerText : "";
+  if (statusText) {
+    statusText.innerText = "⏳ Processing attendance transaction...";
+    statusText.style.color = "var(--accent-secondary)";
+  }
+
+  const now = new Date();
   const day = String(now.getDate()).padStart(2, "0");
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const year = now.getFullYear();
@@ -106,9 +184,9 @@ async function submitAttendance(type) {
       userName: state.user.name,
       date: formattedDate,
       time: formattedTime,
+      coordinates: coords,
     };
 
-    // 🔗 Target /api/absence instead of /api/action
     const response = await fetch(
       `${window.APP_CONFIG.vercelGatewayUrl}/api/absence`,
       {
@@ -118,15 +196,40 @@ async function submitAttendance(type) {
       },
     );
 
-    if (response.ok) {
+    const result = await response.json();
+
+    if (response.ok && result.success) {
       alert(
         `Absence [Check-${type.toUpperCase()}] ${state.user.name} successfully recorded at ${formattedTime} on ${formattedDate}.`,
       );
+      if (statusText) {
+        statusText.innerText = "✅ Attendance recorded successfully.";
+        statusText.style.color = "var(--success)";
+      }
     } else {
-      alert("Attendance state parsing rejection fault.");
+      alert(`⚠️ Request rejected: ${result.message || "Parsing fault."}`);
+      if (statusText) {
+        statusText.innerText = `❌ ${result.message || "Attendance state parsing rejection fault."}`;
+        statusText.style.color = "var(--warning)";
+      }
     }
   } catch (err) {
     console.error(err);
     alert("Gateway processing transmission break.");
+    if (statusText) {
+      statusText.innerText = "❌ Connection failed. Try again.";
+      statusText.style.color = "var(--warning)";
+    }
+  } finally {
+    // 2. Cooldown timer: re-enable buttons after 5 seconds
+    setTimeout(() => {
+      const isBypassed = Boolean(
+        state.user?.bypass ||
+        state.user?.Bypass ||
+        String(state.user?.bypass).toUpperCase() === "TRUE",
+      );
+      if (btnIn) btnIn.disabled = false;
+      if (btnOut) btnOut.disabled = false;
+    }, 5000);
   }
 }

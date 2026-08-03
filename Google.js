@@ -21,8 +21,10 @@ function doPost(e) {
 
   const action = requestData.action;
 
-  // Route incoming request vectors
-  if (action === "login") {
+  // Route incoming request vectors cleanly
+  if (action === "checkSession") {
+    return handleCheckSession(requestData.userId);
+  } else if (action === "login") {
     return handleLogin(requestData.userId, requestData.pin);
   } else if (action === "fetchTasks") {
     return handleFetchTasks(requestData.username, requestData.userTeam);
@@ -39,7 +41,7 @@ function doPost(e) {
 }
 
 /**
- * 🔑 Authenticate users and check the Login box (Column E)
+ * 🔑 Authenticate users and set the Login checkbox (Column E / 5th Column) to TRUE
  */
 function handleLogin(userId, pin) {
   const sheet =
@@ -49,22 +51,33 @@ function handleLogin(userId, pin) {
   if (!sheet)
     return convertToOutput({ success: false, message: "Users sheet missing." });
 
+  // Fetch all values from sheet
   const data = sheet.getDataRange().getValues();
+
+  const targetUserId = String(userId || "")
+    .trim()
+    .toLowerCase();
+  const targetPin = String(pin || "").trim();
 
   // Loop through rows (i = 1 skips header row)
   for (let i = 1; i < data.length; i++) {
-    const rowUserId = String(data[i][0] || "").trim();
+    const rowUserId = String(data[i][0] || "")
+      .trim()
+      .toLowerCase();
     const rowPin = String(data[i][1] || "").trim();
 
-    if (!rowUserId) continue; // Skip blank rows
+    // Skip empty User ID rows
+    if (!rowUserId) continue;
 
-    if (rowUserId === String(userId).trim() && rowPin === String(pin).trim()) {
-      const rowIndex = i + 1; // Apps Script row numbers start at 1
+    // Case-insensitive match on UserID and exact match on PIN
+    if (rowUserId === targetUserId && rowPin === targetPin) {
+      const rowIndex = i + 1; // Google Sheets row numbers start at 1
 
-      // 🟢 Set Column E (5th Column: 'Login') to TRUE
-      sheet.getRange(rowIndex, 5).setValue(true);
+      // 🟢 Force write TRUE directly into Column E (5th Column)
+      const targetCell = sheet.getRange(rowIndex, 5);
+      targetCell.setValue(true);
 
-      // Force Google Sheets to save changes immediately
+      // Force immediate engine write-through
       SpreadsheetApp.flush();
 
       return convertToOutput({
@@ -72,7 +85,7 @@ function handleLogin(userId, pin) {
         user: {
           id: data[i][0],
           name: data[i][2],
-          bypass: data[i][3], // Column D
+          bypass: Boolean(data[i][3]), // Column D (Bypass)
           loginStatus: true,
         },
       });
@@ -80,6 +93,35 @@ function handleLogin(userId, pin) {
   }
 
   return convertToOutput({ success: false, message: "Invalid credentials." });
+}
+
+/**
+ * 🔍 Validates if the user's Login checkbox (Column E) is still checked
+ */
+function handleCheckSession(userId) {
+  const sheet =
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Users") ||
+    SpreadsheetApp.getActiveSpreadsheet().getSheetByName("users");
+
+  if (!sheet) return convertToOutput({ isLoggedIn: false });
+
+  const data = sheet.getDataRange().getValues();
+  const targetUserId = String(userId || "")
+    .trim()
+    .toLowerCase();
+
+  for (let i = 1; i < data.length; i++) {
+    const rowUserId = String(data[i][0] || "")
+      .trim()
+      .toLowerCase();
+    if (rowUserId === targetUserId) {
+      // Column E (Index 4) contains the Login status boolean
+      const isLoginChecked = Boolean(data[i][4]);
+      return convertToOutput({ isLoggedIn: isLoginChecked });
+    }
+  }
+
+  return convertToOutput({ isLoggedIn: false });
 }
 
 /**
@@ -186,9 +228,37 @@ function handleUploadProof(data) {
 
 /**
  * ⏳ Appends validation data matrix structures into attendance logs
+ * Includes backend rate-limiting protection against rapid submittals.
  */
 function handleAttendance(data) {
   try {
+    const userName = String(data.userName || "").trim();
+    if (!userName) {
+      return convertToOutput({
+        success: false,
+        message: "User identity missing from payload.",
+      });
+    }
+
+    // 🔒 RATE LIMITING: Enforce a 10-second minimum gap between requests per user
+    const scriptProps = PropertiesService.getScriptProperties();
+    const rateLimitKey = "LAST_ATTENDANCE_" + userName.toUpperCase();
+    const lastTimestamp = scriptProps.getProperty(rateLimitKey);
+    const nowTimestamp = Date.now();
+
+    if (lastTimestamp && nowTimestamp - parseInt(lastTimestamp, 10) < 10000) {
+      const remainingSecs = Math.ceil(
+        (10000 - (nowTimestamp - parseInt(lastTimestamp, 10))) / 1000,
+      );
+      return convertToOutput({
+        success: false,
+        message: `Rate limit active. Please wait ${remainingSecs} second(s) before retrying.`,
+      });
+    }
+
+    // Update timestamp lock immediately
+    scriptProps.setProperty(rateLimitKey, nowTimestamp.toString());
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     // 1. Fetch or create the Absence sheet
     const sheet =
@@ -201,7 +271,6 @@ function handleAttendance(data) {
       sheet.appendRow(["Name", "Date", "In Time", "Out Time"]);
     }
 
-    const userName = String(data.userName || "").trim();
     const dateStr = String(data.date || "").trim();
     const timeStr = String(data.time || "").trim();
 
@@ -238,7 +307,6 @@ function handleAttendance(data) {
         const rowName = String(rows[i][0]).trim();
         const rowDate = String(rows[i][1]).trim();
 
-        // Match Name and Date
         if (
           rowName.toLowerCase() === userName.toLowerCase() &&
           rowDate === dateStr
