@@ -66,13 +66,13 @@ function createTasksComponent() {
   header.className = "section-header";
   const headerCopy = document.createElement("div");
 
-  const headerTitle = document.createElement("h2");
-  headerTitle.className = "page-title";
-  headerTitle.textContent = `👤 ${state.user.name}`;
+  // const headerTitle = document.createElement("h2");
+  // headerTitle.className = "page-title";
+  // headerTitle.textContent = `👤 ${state.user.name}`;
 
-  const headerDescription = document.createElement("p");
-  headerDescription.className = "page-copy";
-  headerDescription.textContent = "Active task queue assigned to your scope.";
+  // const headerDescription = document.createElement("p");
+  // headerDescription.className = "page-copy";
+  // headerDescription.textContent = "Active task queue assigned to your scope.";
 
   headerCopy.appendChild(headerTitle);
   headerCopy.appendChild(headerDescription);

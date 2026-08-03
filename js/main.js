@@ -137,7 +137,10 @@ function refreshThemeToggleLabel(button) {
         ? "dark"
         : "light"
       : storedTheme;
-  button.textContent = resolvedTheme === "dark" ? "☀️ Light" : "🌙 Dark";
+  button.textContent =
+    resolvedTheme === "dark"
+      ? `☀️ Hallo ${state.user.name}`
+      : "🌙 Hallo $${state.user.name}";
 }
 
 function createNavbarComponent() {
