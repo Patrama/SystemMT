@@ -228,7 +228,7 @@ function handleUploadProof(data) {
 
 /**
  * ⏳ Appends validation data matrix structures into attendance logs
- * Includes backend rate-limiting protection against rapid submittals.
+ * Fixes single-row date matching using getDisplayValues() and enforces GMT+7 rules.
  */
 function handleAttendance(data) {
   try {
@@ -256,77 +256,103 @@ function handleAttendance(data) {
       });
     }
 
-    // Update timestamp lock immediately
+    // Update rate-limit lock
     scriptProps.setProperty(rateLimitKey, nowTimestamp.toString());
 
+    // 🕒 Calculate current Date & Time in GMT+7
+    const todayGMT7Str = Utilities.formatDate(
+      new Date(),
+      "GMT+7",
+      "dd/MM/yyyy",
+    );
+    const timeGMT7Str = Utilities.formatDate(
+      new Date(),
+      "GMT+7",
+      "hh:mm a", // Formats cleanly like "12:05 AM" to match your sheet
+    );
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    // 1. Fetch or create the Absence sheet
     const sheet =
       ss.getSheetByName("Absence") ||
       ss.getSheetByName("AttendanceLogs") ||
       ss.insertSheet("Absence");
 
-    // 2. Set up headers if empty (Column A: Name, B: Date, C: In Time, D: Out Time)
+    // Initialize headers if empty (Column A: Name, B: Date, C: In Time, D: Out Time)
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(["Name", "Date", "In Time", "Out Time"]);
     }
 
-    const dateStr = String(data.date || "").trim();
-    const timeStr = String(data.time || "").trim();
+    // 🔑 FIX: Use getDisplayValues() so dates are returned as visible strings ("04/08/2026")
+    const rows = sheet.getDataRange().getDisplayValues();
+    let existingRowIndex = -1;
+    let existingInTime = "";
+    let existingOutTime = "";
 
-    if (data.type === "in") {
-      // Check if user already has an IN entry today
-      const rows = sheet.getDataRange().getValues();
-      let rowFound = false;
+    // 🔍 Scan backward for matching User Name and Today's Date
+    for (let i = rows.length - 1; i >= 1; i--) {
+      const rowName = String(rows[i][0]).trim();
+      const rowDate = String(rows[i][1]).trim();
 
-      for (let i = rows.length - 1; i >= 1; i--) {
-        const rowName = String(rows[i][0]).trim();
-        const rowDate = String(rows[i][1]).trim();
-
-        if (
-          rowName.toLowerCase() === userName.toLowerCase() &&
-          rowDate === dateStr
-        ) {
-          // Update existing row's "In Time" (Column C / Index 3)
-          sheet.getRange(i + 1, 3).setValue(timeStr);
-          rowFound = true;
-          break;
-        }
-      }
-
-      // If no entry exists for today, append new row [Name, Date, In Time, Out Time]
-      if (!rowFound) {
-        sheet.appendRow([userName, dateStr, timeStr, ""]);
-      }
-    } else if (data.type === "out") {
-      // Scan backward to find the active entry for today
-      const rows = sheet.getDataRange().getValues();
-      let logged = false;
-
-      for (let i = rows.length - 1; i >= 1; i--) {
-        const rowName = String(rows[i][0]).trim();
-        const rowDate = String(rows[i][1]).trim();
-
-        if (
-          rowName.toLowerCase() === userName.toLowerCase() &&
-          rowDate === dateStr
-        ) {
-          // Update "Out Time" in Column D (Index 4 in Google Sheets 1-based index)
-          sheet.getRange(i + 1, 4).setValue(timeStr);
-          logged = true;
-          break;
-        }
-      }
-
-      // Fallback: If no matching check-in entry was found today, append a new checkout row
-      if (!logged) {
-        sheet.appendRow([userName, dateStr, "", timeStr]);
+      if (
+        rowName.toLowerCase() === userName.toLowerCase() &&
+        rowDate === todayGMT7Str
+      ) {
+        existingRowIndex = i + 1; // Google Sheets row (1-indexed)
+        existingInTime = String(rows[i][2] || "").trim();
+        existingOutTime = String(rows[i][3] || "").trim();
+        break;
       }
     }
 
+    // 🚦 Execute Rules
+    if (data.type === "in") {
+      // Rule: Already checked in today
+      if (existingRowIndex !== -1 && existingInTime !== "") {
+        return convertToOutput({
+          success: false,
+          message: "You're already checked in today.",
+        });
+      }
+
+      if (existingRowIndex !== -1) {
+        sheet.getRange(existingRowIndex, 3).setValue(timeGMT7Str);
+      } else {
+        sheet.appendRow([userName, todayGMT7Str, timeGMT7Str, ""]);
+      }
+
+      return convertToOutput({
+        success: true,
+        message: `Check-in recorded cleanly at ${timeGMT7Str} ✅`,
+      });
+    } else if (data.type === "out") {
+      // Rule: Trying to check out without checking in first
+      if (existingRowIndex === -1 || existingInTime === "") {
+        return convertToOutput({
+          success: false,
+          message: "You must check in first before checking out.",
+        });
+      }
+
+      // Rule: Already checked out today
+      if (existingOutTime !== "") {
+        return convertToOutput({
+          success: false,
+          message: "You already checked out today.",
+        });
+      }
+
+      // 🎯 Updates Column D (Out Time) on the SAME row as Check-In!
+      sheet.getRange(existingRowIndex, 4).setValue(timeGMT7Str);
+
+      return convertToOutput({
+        success: true,
+        message: `Check-out recorded cleanly at ${timeGMT7Str} ✅`,
+      });
+    }
+
     return convertToOutput({
-      success: true,
-      message: "Attendance registered clean ✅",
+      success: false,
+      message: "Unrecognized attendance type specified.",
     });
   } catch (error) {
     return convertToOutput({
