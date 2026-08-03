@@ -15,8 +15,8 @@ async function checkLoginPersistence() {
   try {
     const session = JSON.parse(storedSession);
 
-    // Verify active status with Google Sheets
-    const res = await fetch(`${config.vercelGatewayUrl}/api/session-check`, {
+    // 🔑 FIX: Pointing cleanly to /api/session (matching api/session.js)
+    const res = await fetch(`${config.vercelGatewayUrl}/api/session`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId: session.user.id }),
@@ -54,8 +54,9 @@ async function verifySessionActive() {
   if (!state.user || !state.user.id) return;
 
   try {
+    // 🔑 FIX: Pointing cleanly to /api/session (matching api/session.js)
     const response = await fetch(
-      `${window.APP_CONFIG.vercelGatewayUrl}/api/session-check`,
+      `${window.APP_CONFIG.vercelGatewayUrl}/api/session`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,7 +73,7 @@ async function verifySessionActive() {
       window.location.reload();
     }
   } catch (err) {
-    console.warn("Session check heart-beat missed:", err);
+    console.warn("Session check heartbeat missed:", err);
   }
 }
 
@@ -81,19 +82,12 @@ setInterval(verifySessionActive, 10000);
 
 /**
  * 🚪 Handles explicit user logout.
- *
- * Honors the `enableLogout` toggle in `APP_CONFIG` — when disabled this
- * function is a safe no-op and the navbar button is not rendered.
- * (Server-side sheet unchecking for the "Login" column lives on the Vercel
- * gateway at /api/logout; it is intentionally NOT bundled in the browser.)
  */
 async function logout() {
   const config = window.APP_CONFIG;
 
-  // 🔇 Logout feature disabled via config — no-op.
   if (!config || config.enableLogout === false) return;
 
-  // Best-effort server notification; never blocks the local sign-out.
   if (state.user && state.user.id) {
     try {
       await fetch(`${config.vercelGatewayUrl}/api/logout`, {
@@ -106,7 +100,6 @@ async function logout() {
     }
   }
 
-  // Wipe the persisted session and reset the in-memory registry.
   localStorage.removeItem("enterprise_session");
   try {
     sessionStorage.removeItem("tasks_cache");
@@ -172,7 +165,7 @@ function createLoginComponent() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, pin }),
+          body: JSON.stringify({ action: "login", userId, pin }),
         },
       );
 
@@ -188,7 +181,6 @@ function createLoginComponent() {
         );
         state.collapsedTasks = storedCollapse ? JSON.parse(storedCollapse) : {};
 
-        // Render the cached queue instantly (if present), then sync in background.
         const cached = loadCachedTasks();
         if (cached) state.tasks = cached;
         renderView();
@@ -199,7 +191,8 @@ function createLoginComponent() {
         loginButton.disabled = false;
         userIdInput.disabled = false;
         pinInput.disabled = false;
-        errText.innerText = result.error || "Authentication failed.";
+        errText.innerText =
+          result.message || result.error || "Authentication failed.";
         errText.style.color = "var(--warning)";
         errText.style.display = "block";
       }
