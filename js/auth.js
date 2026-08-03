@@ -15,7 +15,11 @@ async function checkLoginPersistence() {
   try {
     const session = JSON.parse(storedSession);
 
-    // 🔑 FIX: Pointing cleanly to /api/session (matching api/session.js)
+    if (!session || !session.user || !session.user.id) {
+      localStorage.removeItem("enterprise_session");
+      return false;
+    }
+
     const res = await fetch(`${config.vercelGatewayUrl}/api/session`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -24,8 +28,33 @@ async function checkLoginPersistence() {
     const result = await res.json();
 
     if (result.isLoggedIn) {
-      state.user = session.user;
+      // Restore user state (prefer response user object, fallback to cached session user)
+      state.user = result.user || session.user;
       state.currentView = "tasks";
+
+      // Restore collapsed task preferences
+      const storedCollapse = localStorage.getItem(
+        `collapsed_tasks_${state.user.name}`,
+      );
+      state.collapsedTasks = storedCollapse ? JSON.parse(storedCollapse) : {};
+
+      // Load cached tasks instantly, then refresh from server
+      const cached = loadCachedTasks();
+      if (cached) state.tasks = cached;
+
+      // 🟢 Force UI re-render and background sync
+      if (typeof renderView === "function") renderView();
+      if (typeof refreshTasks === "function") {
+        refreshTasks().then(() => {
+          if (
+            state.currentView === "tasks" &&
+            typeof renderView === "function"
+          ) {
+            renderView();
+          }
+        });
+      }
+
       return true;
     } else {
       localStorage.removeItem("enterprise_session");
@@ -54,7 +83,6 @@ async function verifySessionActive() {
   if (!state.user || !state.user.id) return;
 
   try {
-    // 🔑 FIX: Pointing cleanly to /api/session (matching api/session.js)
     const response = await fetch(
       `${window.APP_CONFIG.vercelGatewayUrl}/api/session`,
       {
