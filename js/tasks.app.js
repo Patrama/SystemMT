@@ -75,10 +75,10 @@ function createTasksComponent() {
   // headerDescription.className = "page-copy";
   // headerDescription.textContent = "Active task queue assigned to your scope.";
 
-  headerCopy.appendChild(headerTitle);
-  headerCopy.appendChild(headerDescription);
-  header.appendChild(headerCopy);
-  container.appendChild(header);
+  // headerCopy.appendChild(headerTitle);
+  // headerCopy.appendChild(headerDescription);
+  // header.appendChild(headerCopy);
+  // container.appendChild(header);
 
   // ... rest of the code stays the same
 
