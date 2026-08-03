@@ -33,4 +33,8 @@ window.APP_CONFIG = {
   // "duration" -> Persists for a specific time window defined below.
   persistenceStrategy: "duration",
   persistenceDurationMs: 8 * 60 * 60 * 1000, // 8 hours in milliseconds (only used if strategy is "duration")
+
+  // --- User Logout Control 🚪 ---
+  // Set to false to hide the logout button and make logout() a safe no-op.
+  enableLogout: true,
 };

@@ -140,7 +140,7 @@ function refreshThemeToggleLabel(button) {
   button.textContent =
     resolvedTheme === "dark"
       ? `☀️ Hallo ${state.user.name}`
-      : "🌙 Hallo $${state.user.name}";
+      : `🌙 Hallo ${state.user.name}`;
 }
 
 function createNavbarComponent() {
@@ -168,6 +168,16 @@ function createNavbarComponent() {
   const navRight = document.createElement("div");
   navRight.className = "nav-buttons";
   navRight.appendChild(themeBtn);
+
+  // 🚪 Optional logout button — only rendered when enabled in APP_CONFIG.
+  if (window.APP_CONFIG.enableLogout === true) {
+    const logoutBtn = document.createElement("button");
+    logoutBtn.className = "nav-btn";
+    logoutBtn.type = "button";
+    logoutBtn.textContent = "🚪 Logout";
+    logoutBtn.onclick = () => logout();
+    navRight.appendChild(logoutBtn);
+  }
 
   nav.appendChild(leftGroup);
   nav.appendChild(navRight);

@@ -66,9 +66,10 @@ function createTasksComponent() {
   header.className = "section-header";
   const headerCopy = document.createElement("div");
 
+  // 🟢 Uncomment or instantiate the header elements properly
   // const headerTitle = document.createElement("h2");
   // headerTitle.className = "page-title";
-  // headerTitle.textContent = `👤 ${state.user.name}`;
+  // headerTitle.textContent = `👤 ${state.user ? state.user.name : "User"}`;
 
   // const headerDescription = document.createElement("p");
   // headerDescription.className = "page-copy";
@@ -78,6 +79,8 @@ function createTasksComponent() {
   headerCopy.appendChild(headerDescription);
   header.appendChild(headerCopy);
   container.appendChild(header);
+
+  // ... rest of the code stays the same
 
   const activeTasks = state.tasks.filter((task) => {
     const doneVal = (task["Done"] || task["done"] || "").trim().toLowerCase();
