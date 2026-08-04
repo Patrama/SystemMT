@@ -17,14 +17,14 @@ function createAbsenceComponent() {
 
   card.innerHTML = `
     <div class="section-header section-header--center">
-      <h2 class="page-title">Office Check-In System</h2>
-      <p class="page-copy">Location access is verified before attendance actions are enabled.</p>
+      <h2 class="page-title">Online Check-In System</h2>
+      <p class="page-copy">\n</p>
     </div>
     <p id="geo-status" class="status-text" role="status" aria-live="polite">Verifying structural presence signatures...</p>
     ${isBypassed ? '<span class="badge badge--success" style="display: block; text-align: center; margin-bottom: 10px;">⚡ Bypass Mode Active</span>' : ""}
     <div class="form-stack" style="margin-top: 20px;">
-      <button id="btn-checkin" class="action-btn" type="button" style="background: linear-gradient(135deg, var(--success), var(--accent-secondary));" disabled>Check In (Arrival)</button>
-      <button id="btn-checkout" class="action-btn secondary" type="button" disabled>Check Out (Departure)</button>
+      <button id="btn-checkin" class="action-btn" type="button" style="background: linear-gradient(135deg, var(--success), var(--accent-secondary));" disabled>Check In</button>
+      <button id="btn-checkout" class="action-btn secondary" type="button" disabled>Check Out</button>
     </div>
   `;
 
@@ -34,7 +34,7 @@ function createAbsenceComponent() {
 
   // 🚀 INITIAL VERIFICATION ON PAGE LOAD
   if (isBypassed) {
-    statusText.innerText = "Location Bypass Active 🔓 Check-In Authorized.";
+    statusText.innerText = "Location Bypass 🔓 Active";
     statusText.style.color = "var(--success)";
     btnIn.disabled = false;
     btnOut.disabled = false;
@@ -49,13 +49,12 @@ function createAbsenceComponent() {
         );
 
         if (distance <= window.APP_CONFIG.officeLocation.radiusMeters) {
-          statusText.innerText =
-            "Location Authorized ✅ Inside Office Perimeter.";
+          statusText.innerText = "Authorized ✅ Inside Office Perimeter.";
           statusText.style.color = "var(--success)";
           btnIn.disabled = false;
           btnOut.disabled = false;
         } else {
-          statusText.innerText = `Access Denied ❌ Out of Bounds. Distance: ${distance.toFixed(1)}m from office anchor point.`;
+          statusText.innerText = `Denied ❌ Distance: ${distance.toFixed(1)}m from office`;
           statusText.style.color = "var(--warning)";
           btnIn.disabled = true;
           btnOut.disabled = true;
@@ -141,13 +140,11 @@ function validateLocationAndProceed(onSuccess, onError) {
     (error) => {
       if (userHasBypass) {
         console.warn(
-          "Location permission denied, but user is under active Bypass.",
+          "Ignoring location permission, user is under active Bypass.",
         );
         onSuccess(null);
       } else {
-        alert(
-          "🔒 Location access denied. You must enable location services to record attendance.",
-        );
+        alert("🔒 Location access denied. Please ENABLE location services");
         if (onError) onError("denied");
       }
     },
@@ -166,7 +163,7 @@ async function submitAttendance(type, coords = null) {
 
   const originalStatus = statusText ? statusText.innerText : "";
   if (statusText) {
-    statusText.innerText = "⏳ Processing attendance transaction...";
+    statusText.innerText = "⏳ Processing...";
     statusText.style.color = "var(--accent-secondary)";
   }
 
@@ -174,7 +171,7 @@ async function submitAttendance(type, coords = null) {
   const day = String(now.getDate()).padStart(2, "0");
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const year = now.getFullYear();
-  const formattedDate = `${day}/${month}/${year}`;
+  const formattedDate = `${day} / ${month}`; // /${year}
   const formattedTime = now.toLocaleTimeString("en-GB");
 
   try {
@@ -203,7 +200,7 @@ async function submitAttendance(type, coords = null) {
         `Absence [Check-${type.toUpperCase()}] ${state.user.name} successfully recorded at ${formattedTime} on ${formattedDate}.`,
       );
       if (statusText) {
-        statusText.innerText = "✅ Attendance recorded successfully.";
+        statusText.innerText = "✅ Absence success.";
         statusText.style.color = "var(--success)";
       }
     } else {

@@ -96,6 +96,7 @@ function createTasksComponent() {
   }
 
   const fragment = document.createDocumentFragment();
+  const lowercaseUserName = state.user.name.toLowerCase();
 
   activeTasks.forEach((task, index) => {
     const card = document.createElement("div");
@@ -113,7 +114,7 @@ function createTasksComponent() {
     if (rawTeam) {
       const totalTeamList = rawTeam.split(",").map((name) => name.trim());
       const otherMembers = totalTeamList.filter(
-        (name) => name.toLowerCase() !== state.user.name.toLowerCase(),
+        (name) => name.toLowerCase() !== lowercaseUserName,
       );
       if (otherMembers.length > 0) {
         teamString = otherMembers.join(" · ");

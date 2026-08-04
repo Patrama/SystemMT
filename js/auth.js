@@ -80,7 +80,8 @@ function saveSession(userData, token) {
  * 🔄 Periodic session status validator
  */
 async function verifySessionActive() {
-  if (!state.user || !state.user.id) return;
+  if (document.hidden || !navigator.onLine || !state.user || !state.user.id)
+    return;
 
   try {
     const response = await fetch(
@@ -94,11 +95,10 @@ async function verifySessionActive() {
 
     const result = await response.json();
 
-    // 🔴 If 'Login' is unchecked or FALSE in Google Sheets, wipe session and force logout
     if (!result.isLoggedIn) {
-      alert("Your session has been terminated by an administrator.");
       localStorage.removeItem("enterprise_session");
       window.location.reload();
+      alert("Your session has been terminated by an administrator.");
     }
   } catch (err) {
     console.warn("Session check heartbeat missed:", err);

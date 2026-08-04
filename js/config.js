@@ -1,40 +1,15 @@
-/**
- * 🎛️ SYSTEM CONFIGURATION PANEL
- * Modify the values below to customize the behavior of your presence application.
- *
- * @format
- */
-
 window.APP_CONFIG = {
-  // 🌐 Update this with your live production Vercel URL!
   vercelGatewayUrl: "https://mts-phi.vercel.app",
-
-  // --- Geofencing & Location Safeguards ---
   officeLocation: {
     latitude: -7.2423393,
     longitude: 112.6379209,
-    radiusMeters: 10.0,
+    radiusMeters: 10,
   },
-
-  // ⏱️ Location Bypass Window Duration (in Milliseconds)
-  bypassDurationMs: 1 * 60 * 1000, // 1 minute (60,000 ms)
-
-  // --- Hardcoded Network Anchor ---
-  // Fallback SSID validation matching parameter for the native app check
+  bypassDurationMs: 60000,
   targetWifiSSID: "Office_Corp_Network",
-
-  // --- Visual Configuration Options ---
-  defaultTheme: "light", // Options: "auto" (system sync), "dark", "light"
-  enableHighContrast: false, // 💡 SET TO FALSE FOR SOFT PALETTE.
-
-  // --- Login Persistence Management 🔒 ---
-  // Options:
-  // "daily" -> Wipes the logged-in session automatically at midnight.
-  // "duration" -> Persists for a specific time window defined below.
+  defaultTheme: "light",
+  enableHighContrast: false,
   persistenceStrategy: "duration",
-  persistenceDurationMs: 8 * 60 * 60 * 1000, // 8 hours in milliseconds (only used if strategy is "duration")
-
-  // --- User Logout Control 🚪 ---
-  // Set to false to hide the logout button and make logout() a safe no-op.
+  persistenceDurationMs: 28800000,
   enableLogout: true,
 };
